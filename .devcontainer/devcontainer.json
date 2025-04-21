@@ -1,14 +1,23 @@
 {
-    "name": "python-gym",
+    "name": "python-gym-rl",
     "build": {
         "dockerfile": "./Dockerfile"
     },
     "customizations": {
         "vscode": {
             "extensions": [
-                "ms-python.python"
+                "ms-python.python",
+                "KevinRose.vsc-python-indent",
+                "njpwerner.autodocstring",
+                "charliermarsh.ruff",
+                "VisualStudioExptTeam.vscodeintellicode"
             ]
         }
     },
-    "postCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/setup.sh"
+    "postCreateCommand": "/bin/bash ${containerWorkspaceFolder}/.devcontainer/setup.sh",
+    "features": {
+        "ghcr.io/devcontainers/features/desktop-lite:1": {
+            "password": "vscode"
+        }
+    }
 }

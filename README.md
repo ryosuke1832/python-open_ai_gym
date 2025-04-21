@@ -1,31 +1,46 @@
-# Ubuntu Python Mamba
+# OpenAI Gym 強化学習環境
 
-Ubuntu に Mambaforge を Dev Container Features でインストール
+OpenAI Gym（現在はGymnasium）を使用して強化学習の実験を行うための開発環境です。
+Dev Containerを使用して、Docker上で簡単に環境構築できます。
 
-Ruff で Format と Lint を行う
+## 環境
 
-## Environment
+| 項目 | バージョン |
+|-----|-----------|
+| Python | 3.10 |
+| Gymnasium | 最新版 |
+| Stable Baselines3 | 最新版 |
 
-2024/04/12 現在
+## 含まれるサンプルプログラム
 
-| OS | Version |
-|----|---------|
-| Ubuntu | LTS | 
+- `src/cartpole_sample.py` - CartPole-v1の実行サンプル
+- `src/mario_sample.py` - スーパーマリオブラザーズの実行サンプル
 
-| Tool | Version |
-|------|---------|
-| Python | 3.12.2 |
-| Mamba | 1.5.8 |
-| Conda | 24.3.0 |
+## 使い方
 
-| Docker | SIZE |
-|--------|------|
-| Image Size | 946MB | 
+1. VS Codeで「Dev Containerで開く」を選択
+2. コンテナのビルドが完了するまで待機
+3. サンプルプログラムを実行:
+   ```bash
+   python src/cartpole_sample.py
+   ```
 
-## Extensions
+## インストール済みのGym環境
 
-- [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python)
-- [Python Indent](https://marketplace.visualstudio.com/items?itemName=KevinRose.vsc-python-indent)
-- [autoDocstring - Python Docstring Generator](https://marketplace.visualstudio.com/items?itemName=njpwerner.autodocstring)
-- [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff)
-- [IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
+- 基本的なGym環境（CartPole, MountainCar, Pendulumなど）
+- Atari Games（Breakout, MsPacmanなど）
+- レトロゲーム（Gym Retro）
+- スーパーマリオブラザーズ
+
+## 拡張機能
+
+- Python
+- Python Indent
+- autoDocstring
+- Ruff (Linter)
+- IntelliCode
+
+## 注意点
+
+- GUI表示のために、リモート接続時はポート転送が必要です
+- スーパーマリオブラザーズの実行には別途設定が必要な場合があります

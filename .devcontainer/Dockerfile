@@ -7,12 +7,15 @@ RUN apt-get update \
         build-essential \
         git \
         cmake \
+        zlib1g-dev \
+        python3-tk \
         libgl1-mesa-dev \
         libgl1-mesa-glx \
         libglib2.0-0 \
         libsm6 \
         libxrender1 \
         libxext6 \
+        fceux \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
