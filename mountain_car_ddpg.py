@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 
@@ -26,6 +27,9 @@ def set_seeds(seed=42):
 
 # メイン実行部分
 if __name__ == "__main__":
+    # タイムスタンプを生成（YYYY-MM-DD_HH-MM-SS形式）
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
     # 仮想ディスプレイのセットアップ
     print("Xvfbクリーンアップを実行中...")
     cleanup_xvfb()
@@ -44,22 +48,30 @@ if __name__ == "__main__":
     # 環境の作成
     env = MountainCarContinuousEnv()
 
-    # DDPGエージェントの作成
-    agent = DDPGAgent(env, model_dir="saved_models/ddpg_mountaincar")
+    # DDPGエージェントの作成（タイムスタンプを含む名前のディレクトリを指定）
+    model_dir = f"saved_models/ddpg_mountaincar_{timestamp}"
+    agent = DDPGAgent(env, model_dir=model_dir)
 
     # 以前のモデルをロードするかどうか
     load_pretrained = False  # 新しいモデルから開始
     if load_pretrained:
         # 特定のエピソードのモデルをロード
         episode_to_load = 100  # ロードしたいエピソード番号
+        # ロード元のディレクトリを指定（タイムスタンプなしの元のディレクトリ）
+        load_model_dir = "saved_models/ddpg_mountaincar"
+        # 一時的にmodel_dirを変更
+        original_model_dir = agent.model_dir
+        agent.model_dir = load_model_dir
         agent.load_models(episode_to_load)
         agent.load_history()
+        # model_dirを戻す
+        agent.model_dir = original_model_dir
         start_episode = episode_to_load + 1
     else:
         start_episode = 0
 
     # 学習
-    print("DDPG学習を開始...")
+    print(f"DDPG学習を開始... 結果は {model_dir} に保存されます")
     try:
         history = agent.train(
             episodes=650, max_steps=200, save_interval=10, start_episode=start_episode
@@ -83,7 +95,9 @@ if __name__ == "__main__":
         from PIL import Image
 
         frames_dir = f"{agent.model_dir}/frames"
-        os.makedirs("animations", exist_ok=True)
+        # タイムスタンプを含むアニメーション保存ディレクトリ
+        animations_dir = f"animations_{timestamp}"
+        os.makedirs(animations_dir, exist_ok=True)
 
         # 特定のエピソードのGIF作成
         for episode in [1, 20, 50, 100]:
@@ -100,7 +114,7 @@ if __name__ == "__main__":
 
                     if images:
                         images[0].save(
-                            f"animations/ddpg_episode_{episode}.gif",
+                            f"{animations_dir}/ddpg_episode_{episode}.gif",
                             save_all=True,
                             append_images=images[1:],
                             optimize=False,
@@ -122,7 +136,7 @@ if __name__ == "__main__":
 
                 if images:
                     images[0].save(
-                        f"animations/ddpg_success_{episode}.gif",
+                        f"{animations_dir}/ddpg_success_{episode}.gif",
                         save_all=True,
                         append_images=images[1:],
                         optimize=False,

@@ -145,6 +145,8 @@ class DQNAgent(BaseAgent):
                 "rewards": [],
                 "avg_rewards": [],
                 "steps": [],
+                "positions": [],  # 追加
+                "successes": [],  # 追加
             }
 
         # 特定のエピソードでフレームを保存するためのリスト
@@ -209,6 +211,12 @@ class DQNAgent(BaseAgent):
             # エピソード終了後の処理
             self.history["rewards"].append(episode_reward)
             self.history["steps"].append(episode_steps)
+            self.history["positions"].append(
+                0.0
+            )  # CartPoleでは使用しないが、保存のために0.0を追加
+            self.history["successes"].append(
+                1 if episode_steps >= max_steps else 0
+            )  # max_stepsまで達すると成功とみなす
 
             # 平均報酬の計算
             if len(self.history["rewards"]) >= 100:
