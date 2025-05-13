@@ -277,45 +277,60 @@ class DQNAgent(BaseAgent):
 
             for t in range(500):  # CartPoleの最大ステップ数
                 if render:
-                    self.env.render()
-                    import time
+                    try:
+                        self.env.render()
+                        import time
 
-                    time.sleep(0.01)  # 表示をゆっくりに
+                        time.sleep(0.01)  # 表示をゆっくりに
+                    except Exception as e:
+                        print(f"レンダリングエラー: {e}")
+                        render = False  # 以降のレンダリングを無効化
 
                 # 行動を選択（ノイズなし）
                 action = self.policy(observation, add_noise=False)
 
                 # フレーム保存
                 if save_frames and t % 5 == 0:
-                    save_render_image(
-                        self.env,
-                        f"eval_{episode}",
-                        t,
-                        observation,
-                        episode_reward,
-                        action,
-                        False,
-                        directory=eval_frames_dir,
-                    )
+                    try:
+                        save_render_image(
+                            self.env,
+                            f"eval_{episode}",
+                            t,
+                            observation,
+                            episode_reward,
+                            action,
+                            False,
+                            directory=eval_frames_dir,
+                        )
+                    except Exception as e:
+                        print(f"フレーム保存エラー: {e}")
+                        save_frames = False  # 以降のフレーム保存を無効化
 
                 # 行動を実行
-                observation, reward, done, info = self.env.step(action)
+                try:
+                    observation, reward, done, info = self.env.step(action)
+                except Exception as e:
+                    print(f"環境ステップ実行エラー: {e}")
+                    break
 
                 episode_reward += reward
 
                 if done:
                     # 終了時のフレームを保存
                     if save_frames:
-                        save_render_image(
-                            self.env,
-                            f"eval_{episode}",
-                            t + 1,
-                            observation,
-                            episode_reward,
-                            action,
-                            True,
-                            directory=eval_frames_dir,
-                        )
+                        try:
+                            save_render_image(
+                                self.env,
+                                f"eval_{episode}",
+                                t + 1,
+                                observation,
+                                episode_reward,
+                                action,
+                                True,
+                                directory=eval_frames_dir,
+                            )
+                        except Exception as e:
+                            print(f"最終フレーム保存エラー: {e}")
                     break
 
             rewards.append(episode_reward)
