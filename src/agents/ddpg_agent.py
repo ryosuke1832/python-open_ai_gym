@@ -449,83 +449,118 @@ class DDPGAgent(BaseAgent):
             os.makedirs(eval_frames_dir, exist_ok=True)
 
         for episode in range(episodes):
-            observation = self.env.reset()
-            if isinstance(observation, tuple):
-                observation = observation[0]
+            try:
+                observation = self.env.reset()
+                if isinstance(observation, tuple):
+                    observation = observation[0]
 
-            total_reward = 0
-            max_position = -np.inf
-            success = False
+                total_reward = 0
+                max_position = -np.inf
+                success = False
 
-            for t in range(1000):  # 長めに実行
-                if render:
-                    self.env.render()
-                    import time
+                for t in range(1000):  # 長めに実行
+                    try:
+                        if render:
+                            try:
+                                self.env.render()
+                                import time
 
-                    time.sleep(0.01)  # 表示をゆっくりに
+                                time.sleep(0.01)  # 表示をゆっくりに
+                            except Exception as e:
+                                print(f"レンダリングエラー: {e}")
+                                render = False  # 以降のレンダリングを無効化
 
-                # 行動を選択（ノイズなし）
-                continuous_action = self.policy(observation, add_noise=False)
+                        # 行動を選択（ノイズなし）
+                        continuous_action = self.policy(observation, add_noise=False)
 
-                # continuous_actionを常に適切な形式に変換
-                if not isinstance(continuous_action, np.ndarray):
-                    continuous_action = np.array([continuous_action])
-                elif len(continuous_action.shape) == 0:
-                    continuous_action = np.array([continuous_action.item()])
+                        # continuous_actionを常に適切な形式に変換
+                        if not isinstance(continuous_action, np.ndarray):
+                            continuous_action = np.array([continuous_action])
+                        elif len(continuous_action.shape) == 0:
+                            continuous_action = np.array([continuous_action.item()])
 
-                # フレーム保存
-                if save_frames and t % 5 == 0:
-                    save_render_image(
-                        self.env,
-                        f"eval_{episode}",
-                        t,
-                        observation,
-                        total_reward,
-                        continuous_action,
-                        False,
-                        directory=eval_frames_dir,
-                    )
+                        # フレーム保存
+                        if save_frames and t % 5 == 0:
+                            try:
+                                from src.common.utils import save_render_image
 
-                # 行動を実行
-                observation, reward, done, info = self.env.step(continuous_action)
+                                save_render_image(
+                                    self.env,
+                                    f"eval_{episode}",
+                                    t,
+                                    observation,
+                                    total_reward,
+                                    continuous_action,
+                                    False,
+                                    directory=eval_frames_dir,
+                                )
+                            except Exception as e:
+                                print(f"フレーム保存エラー: {e}")
+                                save_frames = False  # 以降のフレーム保存を無効化
 
-                total_reward += reward
-                max_position = max(max_position, observation[0])
-
-                # 成功判定
-                if observation[0] >= 0.5:
-                    success = True
-
-                    # 成功時は最後のフレームを保存
-                    if save_frames:
-                        save_render_image(
-                            self.env,
-                            f"eval_{episode}_success",
-                            t,
-                            observation,
-                            reward,
-                            continuous_action,
-                            True,
-                            directory=eval_frames_dir,
+                        # 行動を実行
+                        observation, reward, done, info = self.env.step(
+                            continuous_action
                         )
+                        if isinstance(info, tuple):
+                            info = info[0]
 
-                if done:
-                    break
+                        total_reward += reward
+                        max_position = max(max_position, observation[0])
 
-            rewards.append(total_reward)
-            positions.append(max_position)
-            steps_list.append(t + 1)
+                        # 成功判定
+                        if observation[0] >= 0.5:
+                            success = True
 
-            if success:
-                success_count += 1
+                            # 成功時は最後のフレームを保存
+                            if save_frames:
+                                try:
+                                    from src.common.utils import save_render_image
 
+                                    save_render_image(
+                                        self.env,
+                                        f"eval_{episode}_success",
+                                        t,
+                                        observation,
+                                        reward,
+                                        continuous_action,
+                                        True,
+                                        directory=eval_frames_dir,
+                                    )
+                                except Exception as e:
+                                    print(f"最終フレーム保存エラー: {e}")
+
+                        if done:
+                            break
+
+                    except Exception as e:
+                        print(f"ステップ {t} 実行中にエラーが発生: {e}")
+                        break
+
+                rewards.append(total_reward)
+                positions.append(max_position)
+                steps_list.append(t + 1)
+
+                if success:
+                    success_count += 1
+
+                print(
+                    f"評価エピソード {episode + 1}: 報酬 = {total_reward:.2f}, 最大位置 = {max_position:.4f}, ステップ数 = {t + 1}, 成功 = {success}"
+                )
+
+            except Exception as e:
+                print(f"評価エピソード {episode} でエラーが発生: {e}")
+                # エラーが発生しても次のエピソードに進む
+                continue
+
+        # 少なくとも1つのエピソードが完了したか確認
+        if rewards:
+            success_rate = success_count / len(rewards) * 100
             print(
-                f"評価エピソード {episode + 1}: 報酬 = {total_reward:.2f}, 最大位置 = {max_position:.4f}, ステップ数 = {t + 1}, 成功 = {success}"
+                f"評価結果: 平均報酬 = {np.mean(rewards):.2f}, 平均最大位置 = {np.mean(positions):.4f}, 平均ステップ数 = {np.mean(steps_list):.1f}, 成功率 = {success_rate:.1f}%"
             )
-
-        success_rate = success_count / episodes * 100
-        print(
-            f"評価結果: 平均報酬 = {np.mean(rewards):.2f}, 平均最大位置 = {np.mean(positions):.4f}, 平均ステップ数 = {np.mean(steps_list):.1f}, 成功率 = {success_rate:.1f}%"
-        )
+        else:
+            print("評価中にすべてのエピソードでエラーが発生しました。")
+            success_rate = 0
 
         return rewards, positions, steps_list, success_rate

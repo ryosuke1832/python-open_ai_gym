@@ -23,5 +23,6 @@ RUN apt-get update \
        libglu1-mesa-dev \
        libglew-dev \
        freeglut3-dev \
+       xdpyinfo \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

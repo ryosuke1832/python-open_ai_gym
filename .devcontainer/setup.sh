@@ -7,14 +7,24 @@ set -e
 apt-get update -y
 apt-get upgrade -y
 
-# システムパッケージのインストール
+# システムパッケージのインストール（X11関連のパッケージを追加）
 apt-get install -y --no-install-recommends \
     python3-pip \
     python3-tk \
     cmake \
     zlib1g-dev \
     swig \
-    fceux
+    fceux \
+    xvfb \
+    x11-utils \
+    python3-opengl \
+    libgl1-mesa-glx \
+    libgl1-mesa-dev \
+    libglu1-mesa \
+    libglu1-mesa-dev \
+    libglew-dev \
+    freeglut3-dev \
+    xdpyinfo
 
 # Pythonパッケージをインストール
 pip3 install --upgrade pip

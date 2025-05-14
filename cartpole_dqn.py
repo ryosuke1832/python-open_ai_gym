@@ -270,32 +270,35 @@ if __name__ == "__main__":
         print(f"エピソード {current_episode} でモデルを保存します")
         agent.save_models(current_episode)
         agent.save_history()
+        # 評価前に仮想ディスプレイを再設定
+        print("評価前に仮想ディスプレイを再設定しています...")
+        display_available = setup_virtual_display()
 
-    # 評価前に仮想ディスプレイを再設定
-    print("評価前に仮想ディスプレイを再設定しています...")
-    display_available = setup_virtual_display()
-
-    # 評価
-    print("\n学習したDQNモデルの評価...")
-    try:
-        if display_available:
-            # 通常評価（レンダリングあり）
-            eval_rewards, eval_steps = agent.evaluate(episodes=10, save_frames=True)
-        else:
-            # レンダリングなしの評価
-            print("仮想ディスプレイが利用できないため、レンダリングなしで評価します")
-            eval_rewards, eval_steps = agent.evaluate(
-                episodes=10, render=False, save_frames=False
-            )
-    except Exception as e:
-        print(f"評価中にエラーが発生しました: {e}")
-        print("レンダリングなしでの評価を試みます...")
+        # 評価
+        print("\n学習したDDPGモデルの評価...")
         try:
-            eval_rewards, eval_steps = agent.evaluate(
-                episodes=10, render=False, save_frames=False
-            )
-        except Exception as e2:
-            print(f"レンダリングなしの評価も失敗しました: {e2}")
+            if display_available:
+                # 通常評価（レンダリングあり）
+                eval_rewards, eval_positions, eval_steps, success_rate = agent.evaluate(
+                    episodes=5, save_frames=True
+                )
+            else:
+                # レンダリングなしの評価
+                print(
+                    "仮想ディスプレイが利用できないため、レンダリングなしで評価します"
+                )
+                eval_rewards, eval_positions, eval_steps, success_rate = agent.evaluate(
+                    episodes=5, render=False, save_frames=False
+                )
+        except Exception as e:
+            print(f"評価中にエラーが発生しました: {e}")
+            print("レンダリングなしでの評価を試みます...")
+            try:
+                eval_rewards, eval_positions, eval_steps, success_rate = agent.evaluate(
+                    episodes=5, render=False, save_frames=False
+                )
+            except Exception as e2:
+                print(f"レンダリングなしの評価も失敗しました: {e2}")
 
     # 全フレームからGIFアニメーションを作成
     try:
