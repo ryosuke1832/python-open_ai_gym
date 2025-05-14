@@ -6,75 +6,23 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 def check_xvfb_dependencies():
-    """Xvfbの依存関係をチェック・インストール"""
-    import os
-    import subprocess
-    import sys
+    """Xvfbの依存関係をチェック（コマンドの存在を確認）"""
+    import shutil
 
-    dependencies = [
-        "xvfb",
-        "x11-utils",
-        "python3-opengl",
-        "libgl1-mesa-glx",
-        "libgl1-mesa-dev",
-        "xdpyinfo",
-    ]
+    # 実行ファイルの存在をチェック（パッケージ名ではなく）
+    dependencies = ["Xvfb", "xdpyinfo"]
 
     missing_deps = []
     for dep in dependencies:
-        try:
-            result = subprocess.run(
-                ["dpkg", "-s", dep],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                check=False,  # エラーでも終了しない
-            )
-            if result.returncode != 0:
-                missing_deps.append(dep)
-        except:
+        if shutil.which(dep) is None:
             missing_deps.append(dep)
 
     if missing_deps:
-        print(f"以下の依存パッケージが見つかりません: {', '.join(missing_deps)}")
-
-        # root権限が必要な場合、sudoを使用
-        need_sudo = os.geteuid() != 0
-
-        try:
-            print("必要なパッケージをインストールしています...")
-            update_cmd = (
-                ["sudo", "apt-get", "update"] if need_sudo else ["apt-get", "update"]
-            )
-            install_cmd = (
-                ["sudo", "apt-get", "install", "-y"] + missing_deps
-                if need_sudo
-                else ["apt-get", "install", "-y"] + missing_deps
-            )
-
-            print(f"実行コマンド: {' '.join(update_cmd)}")
-            subprocess.run(update_cmd, check=True)
-
-            print(f"実行コマンド: {' '.join(install_cmd)}")
-            subprocess.run(install_cmd, check=True)
-
-            print("パッケージのインストールが完了しました")
-            return True
-        except Exception as e:
-            print(f"パッケージのインストールに失敗しました: {e}")
-            print(
-                "スーパーユーザー権限でスクリプトを実行するか、手動でパッケージをインストールしてください:"
-            )
-            print("  sudo apt-get update")
-            print(f"  sudo apt-get install -y {' '.join(missing_deps)}")
-
-            retry = input("続行しますか？ (y/n): ").strip().lower()
-            if retry != "y":
-                print("プログラムを終了します")
-                sys.exit(1)
-            return False
-
-    print("必要なすべての依存パッケージがインストールされています")
-    return True
+        print(f"以下のコマンドが見つかりません: {', '.join(missing_deps)}")
+        return False
+    else:
+        print("必要なすべてのコマンドが利用可能です")
+        return True
 
 
 def save_render_image(

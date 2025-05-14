@@ -8,7 +8,11 @@ import numpy as np
 import tensorflow as tf
 
 from src.agents.ddpg_agent import DDPGAgent
-from src.common.utils import cleanup_xvfb, setup_virtual_display,check_xvfb_dependencies
+from src.common.utils import (
+    check_xvfb_dependencies,
+    cleanup_xvfb,
+    setup_virtual_display,
+)
 from src.environments.mountain_car import MountainCarContinuousEnv
 
 # 現在のスクリプトの場所を取得してプロジェクトルートに移動
@@ -73,7 +77,6 @@ def find_model_files(directory):
     return []
 
 
-
 def natural_sort_key(s):
     """
     自然順（数値順）でソートするためのキー関数
@@ -100,9 +103,8 @@ if __name__ == "__main__":
     print("Xvfbクリーンアップを実行中...")
     cleanup_xvfb()
     setup_virtual_display()
-    
 
-    # Xvfbの依存関係をチェック・インストール
+    # # Xvfbの依存関係をチェック・インストール
     check_xvfb_dependencies()
 
     # 再現性のためのシード設定
